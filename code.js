@@ -28,7 +28,6 @@ y = []
 z = []
 q = 255
 w = 128
-H=640
 
 // xxx, yyy, zzz format
 /*
@@ -62,10 +61,8 @@ for(n=0;n<T;n++) {
     //console.log("strip has " + U + "verts")
     G(b(),b(),b())
     S++
-    for (m=3;m++<U;) {
+    for (m=3;m++<U;S++)
         G(v2[v2.length-1], v3[v3.length-1], b())
-        S++
-    }
 }
 
 // Add mirrored faces
@@ -131,21 +128,21 @@ setInterval( function() {
 
             if(n<N-S) {
                 // divide by z+something for the real vertices (not for normals)
-                tx[n] = tx[n]/(tz[n]+H)*q + q //silly offset
-                ty[n] = ty[n]/(tz[n]+H)*q + q //silly offset
+                tx[n] = tx[n]/(tz[n]+R)*q + q //silly offset
+                ty[n] = ty[n]/(tz[n]+R)*q + q //silly offset
             }
 
 
 
 
             //tz[n] = x[n]*M8 + y[n]*M9 + z[n]*M10
-            //tx[n] = (x[n]*M0 - y[n]*M1 + z[n]*M2)/(tz[n]+H)*q + q //silly offset
-            //ty[n] = (x[n]*M4 + y[n]*M5 - z[n]*M6)/(tz[n++]+H)*q + q //silly offset
+            //tx[n] = (x[n]*M0 - y[n]*M1 + z[n]*M2)/(tz[n]+R)*q + q //silly offset
+            //ty[n] = (x[n]*M4 + y[n]*M5 - z[n]*M6)/(tz[n++]+R)*q + q //silly offset
         }
 
         X.sort(function(a,b){return tz[v1[b]]-tz[v1[a]]})
         c.fillStyle = "#000000"
-        c.fillRect(0,0,640,480)
+        c.fillRect(0,0,R,480)
         for(n=0;n<S;) {
             c.beginPath()
             t=X[n++]

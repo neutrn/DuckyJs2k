@@ -1,16 +1,14 @@
 <body onload="
 W=new Image();
 W.onload=function(){
-c=document.getElementById('1').getContext('2d');
+k=document.getElementById('1');
+R=k.width=k.height=640;
+c=k.getContext('2d');
 c.drawImage(W,0,0);
-p=c.getImageData(0,0,640,4).data;
+p=c.getImageData(0,0,R,4).data;
 Z='';
 i=0;
-while(!/\/\//.test(Z)){
-Z+=String.fromCharCode(p[i++*4])
-}
+while(i<LENGTH_code.dat)Z+=String.fromCharCode(p[i++*4]);
 eval(Z)
-}
-;
-W.src='i.png'">
-<canvas width=640 height=480 id=1></canvas>
+};W.src='i.png'">
+<canvas id=1></canvas>
