@@ -1,7 +1,7 @@
 <body onload="
 W=new Image();
 W.onload=function(){
-k=document.getElementById('1');
+k=document.body.children[0];
 R=k.width=k.height=640;
 c=k.getContext('2d');
 c.drawImage(W,0,0);
@@ -11,4 +11,4 @@ i=0;
 while(i<LENGTH_code.dat)Z+=String.fromCharCode(p[i++*4]);
 eval(Z)
 };W.src='i.png'">
-<canvas id=1>
+<canvas>

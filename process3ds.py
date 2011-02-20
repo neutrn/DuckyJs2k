@@ -90,8 +90,8 @@ def dump_points(a):
 	overflow_count = 0
 
 	if 1: # use 'new' format, first all x coords, etc
-		print "Outputting %s points" % (n)
-		r = chr(n) + ax + ay + az
+		print "Outputting %s points (in reversed order)" % (n)
+		r = chr(n) + ax[::-1] + ay[::-1] + az[::-1]
 
 	#for R in point_map.keys():
 	#	print "%s, %s" % (R, point_map[R])
