@@ -75,6 +75,7 @@ N+=S // add normals to vertex count
 // Face order
 X = []
 for(n=0;n<S;) X[n]=n++
+//for(n=S-1;X[n]=n--;);
 
 // Sort faces
 //function Y(a,b) { return tz[v1[a]]>tz[v1[b]] ? -1 : 1 }
@@ -142,7 +143,7 @@ setInterval( function() {
 
         X.sort(function(a,b){return tz[v1[b]]-tz[v1[a]]})
         c.fillStyle = "#000000"
-        c.fillRect(0,0,R,480)
+        c.fillRect(0,0,R,R)
         for(n=0;n<S;) {
             c.beginPath()
             t=X[n++]
