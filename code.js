@@ -2,6 +2,13 @@ function b() {
     return p[i++*4]
 }
 
+//RENAME x1 A
+//RENAME x2 B
+//RENAME y1 C
+//RENAME y2 D
+//RENAME z1 E
+//RENAME z2 F
+
 // push face
 function G(a,b,c) {
     v1.push(a)
@@ -11,9 +18,15 @@ function G(a,b,c) {
     // normal
     //y1*z2 - y2*z1 , z1*x2 - z2*x1 , x1*y2 - x2*y1
 
-    t = x[a]-w
-    u = y[a]-w
-    v = z[a]-w
+    x1=x[a]-x[b]
+    y1=y[a]-y[b]
+    z1=z[a]-z[b]
+    x2=x[a]-x[c]
+    y2=y[a]-y[c]
+    z2=z[a]-z[c]
+    t = y1*z2 - y2*z1
+    u = z1*x2 - z2*x1
+    v = x1*y2 - x2*y1
     l=Math.sqrt(t*t+u*u+v*v)
     x.push(t/l)
     y.push(u/l)
@@ -147,8 +160,9 @@ setInterval( function() {
         for(n=0;n<S;) {
             c.beginPath()
             t=X[n++]
-            h=ty[N-S+t]*w|0 // |0 = round down to integer
-            h=h<0?-h:h
+            h=tz[N-S+t]*32|0 // |0 = round down to integer
+            h=99+(h<0?-h:h)
+            //if(v1[t]%(S/2)<18)h=h/4
             //h=t%0xFF
             c.fillStyle = "rgb("+h+","+h+",0)"
             //console.log(h)

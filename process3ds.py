@@ -54,7 +54,7 @@ def dump_points(a):
 		#print "Old %s,%s,%s" % (o[0], o[1], o[2])
 
 		dupecheckv = (x<<16) + (y<<8) + z
-		if dupecheckv in dupecheck:
+		if 0: #// TODO disabled: dupecheckv in dupecheck:
 			dupecount += 1
 			print 'Point %s is a duplicate to %s' % (n, dupecheck.index(dupecheckv))
 			#print point_map
@@ -90,24 +90,31 @@ def dump_points(a):
 	overflow_count = 0
 
 	if 1: # use 'new' format, first all x coords, etc
+		print "Outputting %s points" % (n)
 		r = chr(n) + ax + ay + az
 
-	for R in point_map.keys():
-		print "%s, %s" % (R, point_map[R])
+	#for R in point_map.keys():
+	#	print "%s, %s" % (R, point_map[R])
 	return r
 
 def populate_faces(a):
 	global faces
+	global points
 	n = 0
+	faceverts = range(len(points))
 	for f in a:
 		j = point_map[f[0]]
 		k = point_map[f[1]]
 		l = point_map[f[2]]
 		if j!=k and j!=l and k!=l:
-			faces.append([point_map[f[0]], point_map[f[1]], point_map[f[2]]])
+			faces.append([j,k,l])
 			n += 1
+			if j in faceverts: faceverts.remove(j)
+			if k in faceverts: faceverts.remove(k)
+			if l in faceverts: faceverts.remove(l)
 		else:
 			print 'Dropped zero face %s' % (n)
+	print "Unused vertices", faceverts
 
 def dump_points_obj(a):
 	r = ''
@@ -283,22 +290,32 @@ def main():
 	find_extents(d.mdata.objects)
 	for o in d.mdata.objects:
 		print('Object ' + o.name)
-		if (hasattr(o.obj, 'points') and o.name == 'Cube'):
+		if hasattr(o.obj, 'points') and o.name == 'Cube':
 			print('Triobj %s points' % o.obj.points.npoints)
-			#check_dupe_points(o.obj.points.array)
-			#outb += chr(o.obj.points.npoints) // dump_points outputs number of points (due to dupe check)
-			outb += dump_points(o.obj.points.array)
-			populate_faces(o.obj.faces.array)
-			#print('...%s faces' % o.obj.faces.nfaces)
-			#outfile.write(chr(o.obj.faces.nfaces >> 8) + chr(o.obj.faces.nfaces & 0xFF))
-			#outfile.write(dump_faces(o.obj.faces.array))
+			duckbody=o.obj
+		elif hasattr(o.obj, 'points') and o.name == 'Object05':
+			print('Triobj %s points' % o.obj.points.npoints)
+			duckeye=o.obj
 
-			#objfile = open('tmp/tmp.obj', 'w')
-			#objfile.write(dump_points_obj(o.obj.points.array))
-			#objfile.write(dump_faces_obj(o.obj.faces.array))
-			#os.system('Stripe/stripe tmp/tmp.obj')
+	# build combined array of eye+body points
+	pointarray = []
+	for p in duckeye.points.array:
+		pointarray.append([p[0],p[1],p[2]])
+	for p in duckbody.points.array:
+		pointarray.append([p[0],p[1],p[2]])
+	outb += dump_points(pointarray)
 
-			outb += stripify()
+	# build combined array of eye+body faces
+	facearray = []
+	for f in duckeye.faces.array:
+		facearray.append([f[0],f[1],f[2]])
+	o = len(duckeye.points.array)
+	for f in duckbody.faces.array:
+		facearray.append([f[0]+o,f[1]+o,f[2]+o])
+
+	# generate triangle strips
+	populate_faces(facearray)
+	outb += stripify()
 
 	outfile = open(sys.argv[2], 'wb')
 	outfile.write(outb)
