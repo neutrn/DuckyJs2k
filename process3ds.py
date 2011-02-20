@@ -15,6 +15,18 @@ point_map = {}
 points = []
 faces = []
 
+def sort_points(ps, fs):
+	sort_key = 0 # x seems best
+	old_ps = ps + []
+	print ps
+	ps.sort(key=lambda p: p[sort_key])
+	print ps
+	for f in range(len(fs)):
+		for fv in range(3):
+			fs[f][fv] = ps.index(old_ps[fs[f][fv]])
+
+
+
 def dump_points(a):
 	global overflow_count
 	global point_map
@@ -245,7 +257,7 @@ def stripify():
 	final_strips = []
 	for s in strips:
 		if len(s) == 3:
-			non_stripable_faces += s
+			non_stripable_faces.append(s)
 		else:
 			final_strips.append(s)
 
@@ -253,9 +265,15 @@ def stripify():
 
 	# first non-stripped faces
 	print 'Outputting %s non-stripped faces' % (len(non_stripable_faces)/3)
-	r += chr(len(non_stripable_faces)/3)
+	r += chr(len(non_stripable_faces))
+	
+	# sort by first vertex index
+	non_stripable_faces.sort(key=lambda v1: v1[2])
+
 	for c in non_stripable_faces:
-		r += chr(point_map[c])
+		r += chr(point_map[c[0]])
+		r += chr(point_map[c[1]])
+		r += chr(point_map[c[2]])
 	
 	# strips
 	print 'Outputting %s strips' % (len(final_strips))
@@ -303,7 +321,6 @@ def main():
 		pointarray.append([p[0],p[1],p[2]])
 	for p in duckbody.points.array:
 		pointarray.append([p[0],p[1],p[2]])
-	outb += dump_points(pointarray)
 
 	# build combined array of eye+body faces
 	facearray = []
@@ -313,7 +330,11 @@ def main():
 	for f in duckbody.faces.array:
 		facearray.append([f[0]+o,f[1]+o,f[2]+o])
 
-	# generate triangle strips
+	# sort points
+	sort_points(pointarray, facearray)
+
+	# dump points and generate triangle strips
+	outb += dump_points(pointarray)
 	populate_faces(facearray)
 	outb += stripify()
 
