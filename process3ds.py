@@ -15,6 +15,18 @@ point_map = {}
 points = []
 faces = []
 
+def sort_points(ps, fs):
+	sort_key = 0 # x seems best
+	old_ps = ps + []
+	#print ps
+	ps.sort(key=lambda p: p[sort_key])
+	#print ps
+	for f in range(len(fs)):
+		for fv in range(3):
+			fs[f][fv] = ps.index(old_ps[fs[f][fv]])
+
+
+
 def dump_points(a):
 	global overflow_count
 	global point_map
@@ -90,24 +102,31 @@ def dump_points(a):
 	overflow_count = 0
 
 	if 1: # use 'new' format, first all x coords, etc
-		r = chr(n) + ax + ay + az
+		print "Outputting %s points (in reversed order)" % (n)
+		r = chr(n) + ax[::-1] + ay[::-1] + az[::-1]
 
-	for R in point_map.keys():
-		print "%s, %s" % (R, point_map[R])
+	#for R in point_map.keys():
+	#	print "%s, %s" % (R, point_map[R])
 	return r
 
 def populate_faces(a):
 	global faces
+	global points
 	n = 0
+	faceverts = range(len(points))
 	for f in a:
 		j = point_map[f[0]]
 		k = point_map[f[1]]
 		l = point_map[f[2]]
 		if j!=k and j!=l and k!=l:
-			faces.append([point_map[f[0]], point_map[f[1]], point_map[f[2]]])
+			faces.append([j,k,l])
 			n += 1
+			if j in faceverts: faceverts.remove(j)
+			if k in faceverts: faceverts.remove(k)
+			if l in faceverts: faceverts.remove(l)
 		else:
 			print 'Dropped zero face %s' % (n)
+	print "Unused vertices", faceverts
 
 def dump_points_obj(a):
 	r = ''
@@ -231,6 +250,8 @@ def stripify_longest():
 
 def stripify():
 	global faces
+	# faces is already mapped through point_map
+
 	print 'Brute forcing triangle strips...'
 	while stripify_longest():
 		pass
@@ -238,7 +259,7 @@ def stripify():
 	final_strips = []
 	for s in strips:
 		if len(s) == 3:
-			non_stripable_faces += s
+			non_stripable_faces.append(s)
 		else:
 			final_strips.append(s)
 
@@ -246,9 +267,15 @@ def stripify():
 
 	# first non-stripped faces
 	print 'Outputting %s non-stripped faces' % (len(non_stripable_faces)/3)
-	r += chr(len(non_stripable_faces)/3)
+	r += chr(len(non_stripable_faces))
+	
+	# sort by first vertex index
+	non_stripable_faces.sort(key=lambda v1: v1[2])
+
 	for c in non_stripable_faces:
-		r += chr(point_map[c])
+		r += chr(c[0])
+		r += chr(c[1])
+		r += chr(c[2])
 	
 	# strips
 	print 'Outputting %s strips' % (len(final_strips))
@@ -256,7 +283,7 @@ def stripify():
 	for s in final_strips:
 		r += chr(len(s))
 		for v in s:
-			r += chr(point_map[v])
+			r += chr(v)
 
 	return r
 
@@ -283,22 +310,35 @@ def main():
 	find_extents(d.mdata.objects)
 	for o in d.mdata.objects:
 		print('Object ' + o.name)
-		if (hasattr(o.obj, 'points') and o.name == 'Cube'):
+		if hasattr(o.obj, 'points') and o.name == 'Cube':
 			print('Triobj %s points' % o.obj.points.npoints)
-			#check_dupe_points(o.obj.points.array)
-			#outb += chr(o.obj.points.npoints) // dump_points outputs number of points (due to dupe check)
-			outb += dump_points(o.obj.points.array)
-			populate_faces(o.obj.faces.array)
-			#print('...%s faces' % o.obj.faces.nfaces)
-			#outfile.write(chr(o.obj.faces.nfaces >> 8) + chr(o.obj.faces.nfaces & 0xFF))
-			#outfile.write(dump_faces(o.obj.faces.array))
+			duckbody=o.obj
+		elif hasattr(o.obj, 'points') and o.name == 'Object05':
+			print('Triobj %s points' % o.obj.points.npoints)
+			duckeye=o.obj
 
-			#objfile = open('tmp/tmp.obj', 'w')
-			#objfile.write(dump_points_obj(o.obj.points.array))
-			#objfile.write(dump_faces_obj(o.obj.faces.array))
-			#os.system('Stripe/stripe tmp/tmp.obj')
+	# build combined array of eye+body points
+	pointarray = []
+	for p in duckeye.points.array:
+		pointarray.append([p[0],p[1],p[2]])
+	for p in duckbody.points.array:
+		pointarray.append([p[0],p[1],p[2]])
 
-			outb += stripify()
+	# build combined array of eye+body faces
+	facearray = []
+	for f in duckeye.faces.array:
+		facearray.append([f[0],f[1],f[2]])
+	o = len(duckeye.points.array)
+	for f in duckbody.faces.array:
+		facearray.append([f[0]+o,f[1]+o,f[2]+o])
+
+	# sort points
+	sort_points(pointarray, facearray)
+
+	# dump points and generate triangle strips
+	outb += dump_points(pointarray)
+	populate_faces(facearray)
+	outb += stripify()
 
 	outfile = open(sys.argv[2], 'wb')
 	outfile.write(outb)

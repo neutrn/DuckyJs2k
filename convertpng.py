@@ -15,6 +15,7 @@ cv = pngcanvas.PNGCanvas(width, height)
 offset = 0
 
 rc=gc=bc=1
+l=0
 
 for fn in sys.argv[1:]:
 	f = open(fn, 'rb')
@@ -29,7 +30,8 @@ for fn in sys.argv[1:]:
 	#else:
 	#	rc=1
 	for c in d:
-		cv.point(x, y, [ord(c)*rc, ord(c)*gc, ord(c)*bc, 0xFF])
+		l=ord(c)
+		cv.point(x, y, [l*rc, l*gc, l*bc, 0xFF])
 		x = x + 1
 		if x >= width:
 			x = 0
@@ -40,7 +42,7 @@ for fn in sys.argv[1:]:
 
 # clear remainder
 while y<height:
-	cv.point(x, y, [0, 0, 0, 0xFF])
+	cv.point(x, y, [l, l, l, 0xFF])
 	x = x + 1
 	if x >= width:
 		x = 0
