@@ -147,7 +147,7 @@ setInterval( function() { with(Math) {
         t=X[n];
         h=tx[N-S+t]+ty[N-S+t]-tz[N-S+t];
         h=h*h*h;
-        h=99+(h<0?-h:h)*6;
+        h=99+(h<0?-h:h)*4;
         // If the face includes any of the first 17 vertices, it's part of the eye
         A=h/8;
         if(v1[t]%orig_num_faces<17)h=h/6,A=h;
