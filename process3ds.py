@@ -18,9 +18,9 @@ faces = []
 def sort_points(ps, fs):
 	sort_key = 0 # x seems best
 	old_ps = ps + []
-	print ps
+	#print ps
 	ps.sort(key=lambda p: p[sort_key])
-	print ps
+	#print ps
 	for f in range(len(fs)):
 		for fv in range(3):
 			fs[f][fv] = ps.index(old_ps[fs[f][fv]])
@@ -66,7 +66,7 @@ def dump_points(a):
 		#print "Old %s,%s,%s" % (o[0], o[1], o[2])
 
 		dupecheckv = (x<<16) + (y<<8) + z
-		if 0: #// TODO disabled: dupecheckv in dupecheck:
+		if dupecheckv in dupecheck:
 			dupecount += 1
 			print 'Point %s is a duplicate to %s' % (n, dupecheck.index(dupecheckv))
 			#print point_map
@@ -250,6 +250,8 @@ def stripify_longest():
 
 def stripify():
 	global faces
+	# faces is already mapped through point_map
+
 	print 'Brute forcing triangle strips...'
 	while stripify_longest():
 		pass
@@ -271,9 +273,9 @@ def stripify():
 	non_stripable_faces.sort(key=lambda v1: v1[2])
 
 	for c in non_stripable_faces:
-		r += chr(point_map[c[0]])
-		r += chr(point_map[c[1]])
-		r += chr(point_map[c[2]])
+		r += chr(c[0])
+		r += chr(c[1])
+		r += chr(c[2])
 	
 	# strips
 	print 'Outputting %s strips' % (len(final_strips))
@@ -281,7 +283,7 @@ def stripify():
 	for s in final_strips:
 		r += chr(len(s))
 		for v in s:
-			r += chr(point_map[v])
+			r += chr(v)
 
 	return r
 
