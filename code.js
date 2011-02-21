@@ -1,3 +1,7 @@
+
+// The silly //RENAME comments can be used to shorten variable or function
+// names in preprocessing
+
 //RENAME getByte b
 function getByte() {
     return p[i++*4]
@@ -16,7 +20,7 @@ function pushFace(a,b,c) {
 //RENAME z1 E
 //RENAME z2 F
 
-    // Calculate normal using cross product
+    // Calculate face normal using cross product and normalize
     x1=x[a]-x[b];
     y1=y[a]-y[b];
     z1=z[a]-z[b];
@@ -32,10 +36,12 @@ function pushFace(a,b,c) {
     z.push(v/l)
 }
 
-N = getByte();
+//RENAME orig_num_faces L
+orig_num_faces = N = getByte();
 //console.log('npoints(N): ' + N)
 
-// vertex data
+// Vertex data
+// Normals are appended to the same array when reading face data
 x = [];
 y = [];
 z = [];
@@ -45,26 +51,26 @@ w = 128;
 
 // Read vertex data, xxx..., yyy..., zzz... format
 // Add mirrored vertices while at it
-for(n=N;n--;)x[n]=(getByte()-w-124)/3,x[n+N]=-x[n];
+for(n=N;n--;)x[n]=getByte()/3-84,x[n+N]=-x[n];
 for(n=N;n--;)y[n]=y[n+N]=getByte()-w;
 for(n=N;n--;)z[n]=z[n+N]=getByte()*2-q;
 
 N*=2;
 
-//xRENAME v1 K
-//xRENAME v2 H
-//xRENAME v3 J
+// Face data (i.e. vertex indices)
 v1 = [];
 v2 = [];
 v3 = [];
+
+// Read list of non-stripped faces. Three vertex indices per face
 S=getByte();
 for(n=S;n--;) pushFace(getByte(),getByte(),getByte());
 
+// Read triangle strips
 T = getByte();
-//console.log('nstrips(T) ' + T)
 for(n=T;n--;) {
+    // Read strip length
     U = getByte();
-    //console.log('strip has ' + U + 'verts')
     pushFace(getByte(),getByte(),getByte());
     S++;
     for (m=3;m++<U;S++)
@@ -74,37 +80,23 @@ for(n=T;n--;) {
 // Add mirrored faces
 for(n=S;n--;) pushFace(v1[n]+N/2, v2[n]+N/2, v3[n]+N/2);
 
-S*=2;
+S*=2; // add mirrored faces to face count
 
 N+=S; // add normals to vertex count
 
 // Face order
 X = [];
 for(n=S;n--;) X[n]=n;
-//for(n=S-1;X[n]=n--;);
 
-// Sort faces
-//function Y(a,b) { return tz[v1[a]]>tz[v1[b]] ? -1 : 1 }
-
-//xRENAME M0 a
-//xRENAME M1 b
-//xRENAME M2 d
-//xRENAME M4 e
-//xRENAME M5 f
-//xRENAME M6 g
-//xRENAME M8 h
-//xRENAME M8 i
-//xRENAME M10 j
-//xRENAME tx e
-//xRENAME ty d
-//xRENAME tz f
-
+// Render function
 setInterval( function() { with(Math) {
-    t = new Date().getTime()/S;
-    //console.log('t=' + t);
+    t = new Date().getTime()/999;
+
+    // Rotation angles based on current time
     I = sin(t)*2; // angle_x
     O = cos(t*.7)*2; // angle_y
     P = -O; // angle_z
+
     A       = cos(I);
     C       = cos(O);
     E       = cos(P);
@@ -127,13 +119,14 @@ setInterval( function() { with(Math) {
     tz=[];
 
     for(n=N;n--;) {
-        //console.log('E=' + E);
+        // 3D rotation
         tz[n] = x[n]*(B*F-A*D*E) + y[n]*(A*D*F+B*E) + z[n]*A*C;
         tx[n] = x[n]*C*E - y[n]*C*F + z[n]*D;
         ty[n] = x[n]*(B*D*E+A*F) - y[n]*(B*D*F-A*E) - z[n]*B*C;
 
         if(n<=N-S)
-            // divide by z+something for the real vertices (not for normals)
+            // Perspective projection: divide by z+something for
+            // the real vertices (not for normals)
             tx[n]/=tz[n]/q+3,
             ty[n]/=tz[n]/q+3;
 
@@ -142,22 +135,29 @@ setInterval( function() { with(Math) {
         //ty[n] = (x[n]*M4 + y[n]*M5 - z[n]*M6)/(tz[n++]+R)*q + q //silly offset
     }
 
-    X.sort(function(t,n){return tz[v1[t]]-tz[v1[n]]});
+    // Sort using the sum of z coords to each vertex in face
+    X.sort(function(t,n){return tz[v1[t]]-tz[v1[n]]+tz[v2[t]]-tz[v2[n]]+tz[v3[t]]-tz[v3[n]]});
 
+    // Clear background
     c.fillStyle = 'rgb(0,0,0)';
     c.fillRect(0,0,R,R);
+
+    // Render each face
     for(n=S;n--;){
-        c.beginPath();
         t=X[n];
-        h=tz[N-S+t]*32|0; // |0 = round down to integer
-        h=99+(h<0?-h:h);
-        //if(v1[t]%(S/2)<18)h=h/4
-        //h=t%0xFF
-        c.fillStyle = 'rgb('+h+','+h+',0)';
-        //console.log(h)
-        c.moveTo(tx[v1[t]]+q, ty[v1[t]]+q); //, z[v1[n]])
-        c.lineTo(tx[v2[t]]+q, ty[v2[t]]+q); //, z[v2[n]])
-        c.lineTo(tx[v3[t]]+q, ty[v3[t]]+q); //, z[v3[n]])
+        h=tx[N-S+t]+ty[N-S+t]-tz[N-S+t];
+        h=h*h*h;
+        h=99+(h<0?-h:h)*6;
+        // If the face includes any of the first 17 vertices, it's part of the eye
+        A=h/8;
+        if(v1[t]%orig_num_faces<17)h=h/6,A=h;
+        c.fillStyle = 'rgb('+(h|0)+','+(h|0)+','+(A|0)+')'; // |0 = round down to integer
+
+        // Fill face
+        c.beginPath();
+        c.moveTo(tx[v1[t]]+q, ty[v1[t]]+q);
+        c.lineTo(tx[v2[t]]+q, ty[v2[t]]+q);
+        c.lineTo(tx[v3[t]]+q, ty[v3[t]]+q);
         c.fill()
     } }
 }, 9 )

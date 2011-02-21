@@ -14,16 +14,42 @@ point_map = {}
 
 points = []
 faces = []
+eyeverts = []
 
 def sort_points(ps, fs):
+	global eyeverts
+	
+	ee = []
+	for f in eyeverts:
+		ee.append(ps[f])
+	
 	sort_key = 0 # x seems best
 	old_ps = ps + []
 	#print ps
 	ps.sort(key=lambda p: p[sort_key])
-	#print ps
+	print ps
+
+	#make sure eye verts are first
+	f=0
+	while f<len(ps):
+		iseye = 0
+		for e in ee:
+			if ps[f]==e:
+				iseye = 1
+		if iseye:
+			del ps[f]
+		else:
+			f += 1
+
+	for f in ee:
+		ps.insert(0, f)
+
 	for f in range(len(fs)):
 		for fv in range(3):
 			fs[f][fv] = ps.index(old_ps[fs[f][fv]])
+	
+	#for f in range(len(eyeverts)):
+	#	eyeverts[f] = ps.index(old_ps[f])
 
 
 
@@ -31,6 +57,7 @@ def dump_points(a):
 	global overflow_count
 	global point_map
 	global points
+	global eyeverts
 	r = ''
 	ax = ''
 	ay = ''
@@ -107,6 +134,9 @@ def dump_points(a):
 
 	#for R in point_map.keys():
 	#	print "%s, %s" % (R, point_map[R])
+	for l in range(len(eyeverts)):
+		eyeverts[l]=point_map[eyeverts[l]]
+	print "Sorted eyeverts", eyeverts
 	return r
 
 def populate_faces(a):
@@ -272,19 +302,34 @@ def stripify():
 	# sort by first vertex index
 	non_stripable_faces.sort(key=lambda v1: v1[2])
 
+	ec=0
 	for c in non_stripable_faces:
 		r += chr(c[0])
 		r += chr(c[1])
 		r += chr(c[2])
-	
+		if c[0] in eyeverts or c[1] in eyeverts or c[2] in eyeverts:
+			ec += 1
+
+	print ec, "non-stripable eye faces"
+
 	# strips
+	ec=0
 	print 'Outputting %s strips' % (len(final_strips))
 	r += chr(len(final_strips))
+	facec = 0
 	for s in final_strips:
+		facec += len(s)-2
 		r += chr(len(s))
+		iseye=0
 		for v in s:
 			r += chr(v)
+			if v in eyeverts:
+				iseye = 1
+		if iseye:
+			ec += 1
 
+	print ec, "strips of eye faces"
+	print "Total:", len(non_stripable_faces)+facec, "faces"
 	return r
 
 def find_extents(objs):
@@ -302,6 +347,7 @@ def find_extents(objs):
 	print "Extents (%s,%s,%s)->(%s,%s,%s)" % (extents[0],extents[2],extents[4],extents[1],extents[3],extents[5])
 
 def main():
+	global eyeverts
 	if len(sys.argv) != 3:
 		sys.exit('Usage ' + sys.argv[0] + '<inputfile> <outputfile>')
 	outb = ''
@@ -328,10 +374,15 @@ def main():
 	facearray = []
 	for f in duckeye.faces.array:
 		facearray.append([f[0],f[1],f[2]])
+		eyeverts += [f[0],f[1],f[2]]
 	o = len(duckeye.points.array)
+	#print "Eye has", o, "vertices"
 	for f in duckbody.faces.array:
 		facearray.append([f[0]+o,f[1]+o,f[2]+o])
 
+	s=set(eyeverts)
+	eyeverts=sorted(list(s))
+	print "Eye verts", eyeverts
 	# sort points
 	sort_points(pointarray, facearray)
 
