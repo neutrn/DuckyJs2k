@@ -5,7 +5,6 @@ duck.dat:    duck.3ds process3ds.py
 
 code.dat:    code.js repl.py
 	python repl.py code.js >tmp/code.js.tmp
-	#java -jar yuicompressor-2.4.2/build/yuicompressor-2.4.2.jar --type js tmp/code.js.tmp -o code.dat
 	python jsmin.py <tmp/code.js.tmp | tr -d '\n' >code.dat
 
 index.html:  duck.html offsets.pl
