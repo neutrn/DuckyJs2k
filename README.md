@@ -12,8 +12,8 @@ The conversation went something like this:
 
 > * a friend: (browsing pouet.net) Wow! They made a rotating duck in less than 2k!
 > * me: Looks cool, but not that impressive, really.
-> * a friend: It's amazing that they did it in less then 2k! Bet you can't do it!
-> * me: No? *Hold me beer!*
+> * a friend: It's amazing that they did it in 2k! Bet you can't do it!
+> * me: No? *Hold my beer!*
 
 # Requirements
 
