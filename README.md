@@ -4,6 +4,8 @@ This is an ugly hack that uses JS+HTML canvas and PNG compression to render a ro
 
 Look here for the end result: http://rossi.pw/duck/
 
+![Screenshot](./screenshot.png?raw=true "Screenshot")
+
 # Why?
 
 The conversation went something like this:
